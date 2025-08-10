@@ -1,0 +1,1 @@
+/usr/bin/cc  -Wall -Wextra -Werror CMakeFiles/monitor.dir/src/monitor.c.o -o monitor 
