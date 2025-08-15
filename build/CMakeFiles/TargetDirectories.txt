@@ -1,0 +1,5 @@
+/mnt/c/Users/ricca/Documents/sha256_service/build/CMakeFiles/server.dir
+/mnt/c/Users/ricca/Documents/sha256_service/build/CMakeFiles/client.dir
+/mnt/c/Users/ricca/Documents/sha256_service/build/CMakeFiles/admin.dir
+/mnt/c/Users/ricca/Documents/sha256_service/build/CMakeFiles/edit_cache.dir
+/mnt/c/Users/ricca/Documents/sha256_service/build/CMakeFiles/rebuild_cache.dir

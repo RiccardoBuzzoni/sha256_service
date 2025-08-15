@@ -1,0 +1,1 @@
+/usr/bin/cc CMakeFiles/admin.dir/src/admin_client.c.o CMakeFiles/admin.dir/src/utils.c.o -o admin  /usr/lib/x86_64-linux-gnu/libssl.so /usr/lib/x86_64-linux-gnu/libcrypto.so 
