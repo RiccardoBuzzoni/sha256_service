@@ -57,10 +57,10 @@ RM = /usr/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /mnt/c/Users/ricca/Documents/sha256_service
+CMAKE_SOURCE_DIR = /sha256_service
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /mnt/c/Users/ricca/Documents/sha256_service/build
+CMAKE_BINARY_DIR = ./build
 
 #=============================================================================
 # Targets provided globally by CMake.

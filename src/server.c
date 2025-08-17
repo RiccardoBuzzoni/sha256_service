@@ -42,7 +42,7 @@ void enqueue_request(request_t req) {
     request_queue[pos].req = req;
     request_queue[pos].priority = req.file_size;
     queue_count++;
-    printf("SERVER: Richiesta aggiunta - '%s' (%zu bytes), coda ora: %d\n", req.filename, req.file_size, queue_count);
+    printf("[Server]: Richiesta aggiunta - '%s' (%d bytes)\n", req.filename, req.file_size);
 }
 
 request_t dequeue_request() {
@@ -59,7 +59,7 @@ request_t dequeue_request() {
 }
 
 void handle_request(request_t req) {
-    printf("[WORKER %d] Inizio: '%s' (%zu bytes)\n", getpid(), req.filename, req.file_size);
+    printf("[Worker %d] Inizio: '%s' (%d bytes)\n", getpid(), req.filename, req.file_size);
 
     sem_wait_op(sem_id, SEM_BUFFER);  // aspetta che il buffer sia pieno
 
@@ -80,24 +80,47 @@ void handle_request(request_t req) {
     strcpy(msg.hash, hash);
     msgsnd(msg_id, &msg, sizeof(msg) - sizeof(long), 0);
 
-    printf("[WORKER %d] Completato: '%s' → %s\n", getpid(), req.filename, hash);
+    printf("[Worker %d] Completato: '%s' → %s\n", getpid(), req.filename, hash);
 }
 
-void sigchld_handler(int sig) {
+void sigchld_handler() {
     pid_t pid;
     while ((pid = waitpid(-1, NULL, WNOHANG)) > 0) {
         current_workers--;
-        printf("WORKER TERMINATO: PID %d, attivi: %d\n", pid, current_workers);
+        printf("[Worker terminato]: PID %d, attivi: %d\n", pid, current_workers);
     }
 }
 
+void sigint_handler() {
+    if(semctl(sem_id, 0, IPC_RMID) == -1) {
+        perror("semctl");
+        exit(EXIT_FAILURE);
+    }
+    if(msgctl(msg_id, IPC_RMID, NULL) == -1) {
+        perror("msgctl");
+        exit(EXIT_FAILURE);
+    }
+    if(shmdt(shm_ptr) == -1) {
+        perror("shmdt");
+        exit(EXIT_FAILURE);
+    }
+    if(shmctl(shm_id, IPC_RMID, NULL) == -1) {
+        perror("shmctl");
+        exit(EXIT_FAILURE);
+    }
+    exit(EXIT_SUCCESS);
+}
+
 int main(int argc, char* argv[]) {
+
+    // Verifica del passaggio corretto per i parametri
     if (argc != 3 || strcmp(argv[1], "--sched") != 0) {
         fprintf(stderr, "Usage: %s --sched <fcfs|srtf>\n", argv[0]);
         exit(1);
     }
     strcpy(scheduling_policy, argv[2]);
 
+    // Inizializzazione delle primitive System V per la comunicazione client-server
     shm_id = init_shm();
     msg_id = init_msg_queue();
     sem_id = init_semaphores();
@@ -105,17 +128,22 @@ int main(int argc, char* argv[]) {
     shm_ptr = shmat(shm_id, NULL, 0);
     if (shm_ptr == (void*)-1) {
         perror("shmat server");
-        exit(1);
+        exit(EXIT_FAILURE);
     }
 
-    signal(SIGCHLD, sigchld_handler);
-
     struct msg_buffer msg;
+
+    // Corpo del server
+    printf("[Server] processo server avviato: %d\n", getpid()); fflush(stdout);
     while (1) {
+
         msgrcv(msg_id, &msg, sizeof(msg) - sizeof(long), 0, 0);
 
         if (msg.msg_type == MSG_REQUEST) {
             request_t req;
+
+            // Viene creata la struttura dati della richiesta
+
             req.client_pid = msg.client_pid;
             strcpy(req.filename, msg.filename);
             req.file_size = msg.file_size;

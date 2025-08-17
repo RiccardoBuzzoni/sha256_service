@@ -3,14 +3,14 @@
 int main(int argc, char* argv[]) {
     if (argc != 2) {
         fprintf(stderr, "Usage: %s <filename>\n", argv[0]);
-        exit(1);
+        exit(EXIT_FAILURE);
     }
 
     char* filename = argv[1];
     FILE* fp = fopen(filename, "rb");
     if (!fp) {
         perror("fopen");
-        exit(1);
+        exit(EXIT_FAILURE);
     }
 
     fseek(fp, 0, SEEK_END);
@@ -20,7 +20,7 @@ int main(int argc, char* argv[]) {
     if (file_size > MAX_FILE_SIZE) {
         fprintf(stderr, "File troppo grande (max 10MB)\n");
         fclose(fp);
-        exit(1);
+        exit(EXIT_FAILURE);
     }
 
     unsigned char* buffer = malloc(file_size);
@@ -34,7 +34,7 @@ int main(int argc, char* argv[]) {
     if (msg_id == -1 || shm_id == -1 || sem_id == -1) {
         perror("Accesso alle risorse IPC fallito");
         free(buffer);
-        exit(1);
+        exit(EXIT_FAILURE);
     }
 
     // 1. Aspetta che il buffer sia libero

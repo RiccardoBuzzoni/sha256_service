@@ -3,13 +3,13 @@
 int main(int argc, char* argv[]) {
     if (argc < 2) {
         fprintf(stderr, "Usage: %s <set_limit N> | get_status\n", argv[0]);
-        exit(1);
+        exit(EXIT_FAILURE);
     }
 
     int msg_id = msgget(MSG_KEY, 0666);
     if (msg_id == -1) {
         perror("msgget");
-        exit(1);
+        exit(EXIT_FAILURE);
     }
 
     struct msg_buffer msg = {0};
@@ -35,13 +35,13 @@ int main(int argc, char* argv[]) {
         msgrcv(msg_id, &resp, sizeof(resp) - sizeof(long), MSG_RESPONSE, 0);
         if (resp.client_pid == getpid() && resp.cmd == CMD_GET_STATUS) {
             printf("Stato del server:\n");
-            printf("  Richieste in coda: %zu\n", resp.file_size);
+            printf("  Richieste in coda: %d\n", resp.file_size);
             printf("  Limite massimo worker: %d\n", resp.data);
         }
     }
     else {
         fprintf(stderr, "Comando non valido.\n");
-        exit(1);
+        exit(EXIT_FAILURE);
     }
 
     return 0;
